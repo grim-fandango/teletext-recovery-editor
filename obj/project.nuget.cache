@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Xa1jy8+h/oY=",
+  "dgSpecHash": "M6N/R3/e1BM=",
   "success": true,
-  "projectFilePath": "D:\\Documents\\git\\teletext-suite-code\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
+  "projectFilePath": "D:\\Documents\\git\\teletext-suite-core\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jkrob\\.nuget\\packages\\entityframework\\6.4.4\\entityframework.6.4.4.nupkg.sha512",
     "C:\\Users\\jkrob\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
@@ -61,9 +61,9 @@
       "code": "NU1701",
       "level": "Warning",
       "message": "Package 'Microsoft.WindowsAPICodePack-Core 1.1.0.2' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0-windows7.0'. This package may not be fully compatible with your project.",
-      "projectPath": "D:\\Documents\\git\\teletext-suite-code\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
+      "projectPath": "D:\\Documents\\git\\teletext-suite-core\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\Documents\\git\\teletext-suite-code\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
+      "filePath": "D:\\Documents\\git\\teletext-suite-core\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
       "libraryId": "Microsoft.WindowsAPICodePack-Core",
       "targetGraphs": [
         "net8.0-windows7.0"
@@ -73,9 +73,9 @@
       "code": "NU1701",
       "level": "Warning",
       "message": "Package 'Microsoft.WindowsAPICodePack-Shell 1.1.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0-windows7.0'. This package may not be fully compatible with your project.",
-      "projectPath": "D:\\Documents\\git\\teletext-suite-code\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
+      "projectPath": "D:\\Documents\\git\\teletext-suite-core\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
       "warningLevel": 1,
-      "filePath": "D:\\Documents\\git\\teletext-suite-code\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
+      "filePath": "D:\\Documents\\git\\teletext-suite-core\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
       "libraryId": "Microsoft.WindowsAPICodePack-Shell",
       "targetGraphs": [
         "net8.0-windows7.0"
