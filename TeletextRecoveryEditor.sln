@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeletextRecoveryEditor", "TeletextRecoveryEditor.csproj", "{6C1A5D7E-782E-6D47-9B14-ED328CCB3379}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeletextSharedResources_Core", "..\teletext-shared-resources\TeletextSharedResources_Core.csproj", "{3C8E8E94-3C84-F345-3F51-82623242F2FE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6C1A5D7E-782E-6D47-9B14-ED328CCB3379}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C1A5D7E-782E-6D47-9B14-ED328CCB3379}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C1A5D7E-782E-6D47-9B14-ED328CCB3379}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C1A5D7E-782E-6D47-9B14-ED328CCB3379}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C8E8E94-3C84-F345-3F51-82623242F2FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C8E8E94-3C84-F345-3F51-82623242F2FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C8E8E94-3C84-F345-3F51-82623242F2FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C8E8E94-3C84-F345-3F51-82623242F2FE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {782DF958-7A11-4D75-BC00-EA42303E96CC}
+	EndGlobalSection
+EndGlobal
