@@ -25,8 +25,8 @@ namespace Teletext
         private bool showBorders = true;
         private List<Page> recoveredPages = new List<Page>();
         private ThemeVariant currentTheme = ThemeVariant.Default;
-        private const int ThumbnailWidth = 160;
-        private const int ThumbnailHeight = 120;
+        private const int ThumbnailWidth = 320;
+        private const int ThumbnailHeight = 240;
 
         public MainWindow()
         {
