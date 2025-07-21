@@ -5,7 +5,8 @@
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="Teletext.MainWindow"
         Title="Teletext Recovery Editor"
-        Width="1200" Height="800">
+        Width="1200" Height="800"
+        DragDrop.AllowDrop="True">
     
     <Grid>
         <Grid.RowDefinitions>
@@ -60,6 +61,8 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="200" />
                 <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="300" />
@@ -79,8 +82,23 @@
             
             <GridSplitter Grid.Column="1" Background="Gray" />
             
-            <!-- Center Panel - Page Display -->
+            <!-- Middle Panel - Thumbnails -->
             <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Text="Thumbnails:" FontWeight="Bold" Margin="0,0,0,5" />
+                <ScrollViewer Grid.Row="1" Name="ThumbnailScrollViewer">
+                    <WrapPanel Name="ThumbnailPanel" />
+                </ScrollViewer>
+            </Grid>
+            
+            <GridSplitter Grid.Column="3" Background="Gray" />
+            
+            <!-- Center Panel - Page Display -->
+            <Grid Grid.Column="4">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
@@ -102,14 +120,13 @@
                 </StackPanel>
             </Grid>
             
-            <GridSplitter Grid.Column="3" Background="Gray" />
+            <GridSplitter Grid.Column="5" Background="Gray" />
             
             <!-- Right Panel - Page Information and Controls -->
-            <Grid Grid.Column="4">
+            <Grid Grid.Column="6">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 
                 <!-- Page Info -->
@@ -142,21 +159,8 @@
                     </Grid>
                 </StackPanel>
                 
-                <!-- Thumbnails -->
-                <Grid Grid.Row="1" Margin="0,10,0,0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    
-                    <TextBlock Grid.Row="0" Text="Thumbnails:" FontWeight="Bold" Margin="0,0,0,5" />
-                    <ScrollViewer Grid.Row="1" Name="ThumbnailScrollViewer">
-                        <WrapPanel Name="ThumbnailPanel" />
-                    </ScrollViewer>
-                </Grid>
-                
                 <!-- Control Buttons -->
-                <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0,10,0,0">
+                <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,10,0,0">
                     <Button Name="RefreshButton" Content="Refresh Display" Margin="0,2" Click="Refresh_Click" />
                     <Button Name="ClearButton" Content="Clear All" Margin="0,2" Click="Clear_Click" />
                 </StackPanel>
