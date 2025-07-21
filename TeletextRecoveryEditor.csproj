@@ -2,26 +2,26 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <AssemblyName>Teletext Recovery Editor</AssemblyName>
-    <RootNamespace>TeletextRecoveryEditor</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RootNamespace>Teletext</RootNamespace>
     <!-- Suppress platform compatibility warnings for Windows Forms app -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.119.0" />
-    <PackageReference Include="Microsoft.WindowsAPICodePack-Core" Version="1.1.0.2" />
-    <PackageReference Include="Microsoft.WindowsAPICodePack-Shell" Version="1.1.0" />
-    <PackageReference Include="X.PagedList" Version="10.0.3" />
-    <PackageReference Include="X.PagedList.Mvc.Core" Version="9.1.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,11 +61,42 @@
   </ItemGroup>
   -->
 
+  <PropertyGroup>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="ExtensionMethods.cs" />
     <Compile Remove="Service.cs" />
     <Compile Remove="SharedClasses.cs" />
+    <Compile Remove="TeletextRecoveryEditor.cs" />
+    <Compile Remove="TeletextRecoveryEditor.Designer.cs" />
+    <Compile Remove="About.cs" />
+    <Compile Remove="About.Designer.cs" />
+    <Compile Remove="Base64UrlImport.cs" />
+    <Compile Remove="Base64UrlImport.Designer.cs" />
+    <Compile Remove="CharacterMap.cs" />
+    <Compile Remove="CreateTeletextStream.cs" />
+    <Compile Remove="CreateTeletextStream.Designer.cs" />
+    <Compile Remove="EnhancedTextAttributes.cs" />
+    <Compile Remove="EnhancedTextAttributes.Designer.cs" />
+    <Compile Remove="ExportSubtitles.cs" />
+    <Compile Remove="ExportSubtitles.Designer.cs" />
+    <Compile Remove="GenerateSubtitles.cs" />
+    <Compile Remove="GenerateSubtitles.Designer.cs" />
+    <Compile Remove="MergeIntoT42.cs" />
+    <Compile Remove="MergeIntoT42.Designer.cs" />
+    <Compile Remove="SyncSubtitles.cs" />
+    <Compile Remove="SyncSubtitles.Designer.cs" />
+    <Compile Remove="Properties\Resources.Designer.cs" />
+    <Compile Remove="Core\**" />
+    <Compile Remove="TrimCarousel.cs" />
+    <Compile Remove="Models\**" />
     <None Remove="TeletextRecoveryEditor.resx.bak" />
+    <None Remove="*.resx" />
+    <EmbeddedResource Remove="*.resx" />
+    <EmbeddedResource Remove="Properties\Resources.resx" />
   </ItemGroup>
 
 </Project>

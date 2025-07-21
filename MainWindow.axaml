@@ -1,0 +1,163 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="Teletext.MainWindow"
+        Title="Teletext Recovery Editor"
+        Width="1200" Height="800">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <!-- Menu Bar -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open" Click="OpenFile_Click" />
+                <MenuItem Header="Open _T42 Service" Click="OpenT42Service_Click" />
+                <Separator />
+                <MenuItem Header="_Save T42 Service" Click="SaveT42Service_Click" />
+                <Separator />
+                <MenuItem Header="E_xit" Click="Exit_Click" />
+            </MenuItem>
+            <MenuItem Header="_Carousel">
+                <MenuItem Header="_Open Carousel" Click="OpenCarousel_Click" />
+                <MenuItem Header="_Save Carousel" Click="SaveCarousel_Click" />
+                <MenuItem Header="Save Carousel _As..." Click="SaveCarouselAs_Click" />
+                <Separator />
+                <MenuItem Header="_Export Carousel" Click="ExportCarousel_Click" />
+                <MenuItem Header="_Clear Carousel" Click="ClearCarousel_Click" />
+            </MenuItem>
+            <MenuItem Header="_Page">
+                <MenuItem Header="_Export Current Page" Click="ExportCurrentPage_Click" />
+                <MenuItem Header="Export as _PNG" Click="ExportPNG_Click" />
+            </MenuItem>
+            <MenuItem Header="P_references">
+                <MenuItem Header="_Font">
+                    <MenuItem Header="_Mullard" Click="FontMullard_Click" />
+                    <MenuItem Header="_ETS" Click="FontETS_Click" />
+                    <MenuItem Header="_TiFax" Click="FontTiFax_Click" />
+                </MenuItem>
+                <MenuItem Header="Show _Borders" Click="ShowBorders_Click" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="About_Click" />
+            </MenuItem>
+        </Menu>
+        
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="300" />
+            </Grid.ColumnDefinitions>
+            
+            <!-- Left Panel - Recovered Pages -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                
+                <TextBlock Grid.Row="0" Text="Recovered Pages:" FontWeight="Bold" Margin="0,0,0,5" />
+                <ListBox Grid.Row="1" Name="RecoveredPagesList" 
+                         SelectionChanged="RecoveredPagesList_SelectionChanged" />
+            </Grid>
+            
+            <GridSplitter Grid.Column="1" Background="Gray" />
+            
+            <!-- Center Panel - Page Display -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <!-- Page Preview Area -->
+                <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Margin="5">
+                    <ScrollViewer Name="PageScrollViewer">
+                        <Canvas Name="PageCanvas" Background="Black" MinWidth="480" MinHeight="576" />
+                    </ScrollViewer>
+                </Border>
+                
+                <!-- Page Controls -->
+                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="5">
+                    <TextBlock Text="Page:" VerticalAlignment="Center" Margin="0,0,5,0" />
+                    <TextBox Name="PageTextBox" Width="60" Text="100" />
+                    <Button Name="LoadPageButton" Content="Load" Margin="10,0,0,0" Click="LoadPage_Click" />
+                    <Button Name="SavePageButton" Content="Save" Margin="10,0,0,0" Click="SavePage_Click" />
+                </StackPanel>
+            </Grid>
+            
+            <GridSplitter Grid.Column="3" Background="Gray" />
+            
+            <!-- Right Panel - Page Information and Controls -->
+            <Grid Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <!-- Page Info -->
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="Page Information:" FontWeight="Bold" Margin="0,0,0,5" />
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Magazine:" Margin="0,2,5,2" />
+                        <TextBox Grid.Row="0" Grid.Column="1" Name="MagazineTextBox" Margin="0,2" />
+                        
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Page:" Margin="0,2,5,2" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Name="PageNumberTextBox" Margin="0,2" />
+                        
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="SubPage:" Margin="0,2,5,2" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Name="SubPageTextBox" Margin="0,2" />
+                        
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="TimeCode:" Margin="0,2,5,2" />
+                        <TextBox Grid.Row="3" Grid.Column="1" Name="TimeCodeTextBox" Margin="0,2" />
+                    </Grid>
+                </StackPanel>
+                
+                <!-- Thumbnails -->
+                <Grid Grid.Row="1" Margin="0,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="Thumbnails:" FontWeight="Bold" Margin="0,0,0,5" />
+                    <ScrollViewer Grid.Row="1" Name="ThumbnailScrollViewer">
+                        <WrapPanel Name="ThumbnailPanel" />
+                    </ScrollViewer>
+                </Grid>
+                
+                <!-- Control Buttons -->
+                <StackPanel Grid.Row="2" Orientation="Vertical" Margin="0,10,0,0">
+                    <Button Name="RefreshButton" Content="Refresh Display" Margin="0,2" Click="Refresh_Click" />
+                    <Button Name="ClearButton" Content="Clear All" Margin="0,2" Click="Clear_Click" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+        
+        <!-- Status Bar -->
+        <TextBlock Grid.Row="2" Name="StatusText" Text="Ready" Background="LightGray" Padding="5" />
+    </Grid>
+</Window>
