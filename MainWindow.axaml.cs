@@ -3,6 +3,8 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.Styling;
+using Avalonia;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,12 +23,20 @@ namespace Teletext
         private string currentFontName = "Mullard";
         private bool showBorders = true;
         private List<Page> recoveredPages = new List<Page>();
+        private ThemeVariant currentTheme = ThemeVariant.Default;
 
         public MainWindow()
         {
             InitializeComponent();
             InitializeRenderer();
+            InitializeTheme();
             UpdateStatus("Teletext Recovery Editor initialized.");
+        }
+
+        private void InitializeTheme()
+        {
+            // Set initial theme menu indicators
+            SetTheme(ThemeVariant.Default, "System Default");
         }
 
         private void InitializeRenderer()
@@ -210,6 +220,39 @@ namespace Teletext
             catch (Exception ex)
             {
                 UpdateStatus($"Error updating renderer borders: {ex.Message}");
+            }
+        }
+
+        // Theme Menu Handlers
+        private void ThemeSystem_Click(object sender, RoutedEventArgs e)
+        {
+            SetTheme(ThemeVariant.Default, "System Default");
+        }
+
+        private void ThemeLight_Click(object sender, RoutedEventArgs e)
+        {
+            SetTheme(ThemeVariant.Light, "Light");
+        }
+
+        private void ThemeDark_Click(object sender, RoutedEventArgs e)
+        {
+            SetTheme(ThemeVariant.Dark, "Dark");
+        }
+
+        private void SetTheme(ThemeVariant theme, string themeName)
+        {
+            currentTheme = theme;
+            
+            // Update menu item indicators
+            ThemeSystemMenuItem.Header = theme == ThemeVariant.Default ? "_System Default ✓" : "_System Default";
+            ThemeLightMenuItem.Header = theme == ThemeVariant.Light ? "_Light ✓" : "_Light";
+            ThemeDarkMenuItem.Header = theme == ThemeVariant.Dark ? "_Dark ✓" : "_Dark";
+            
+            // Apply theme to application
+            if (Application.Current != null)
+            {
+                Application.Current.RequestedThemeVariant = theme;
+                UpdateStatus($"Theme set to: {themeName}");
             }
         }
 

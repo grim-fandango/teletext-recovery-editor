@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Teletext Recovery Editor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6b1513025c2709b5b029e79b5a56e241f080bb7d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8a9ccda921cb24119ae5e5a98176f83d811d18e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Teletext Recovery Editor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Teletext Recovery Editor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
