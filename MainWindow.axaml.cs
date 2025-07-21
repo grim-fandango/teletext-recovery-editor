@@ -590,17 +590,22 @@ namespace Teletext
 
         private string FormatFileSize(long bytes)
         {
+            if (bytes == 0)
+                return "0 B";
+
             const int scale = 1024;
             string[] orders = new string[] { "B", "KB", "MB", "GB", "TB" };
-            long max = (long)Math.Pow(scale, orders.Length - 1);
-
-            foreach (string order in orders)
+            
+            int orderIndex = 0;
+            double size = bytes;
+            
+            while (size >= scale && orderIndex < orders.Length - 1)
             {
-                if (bytes > max)
-                    return string.Format("{0:##.##} {1}", decimal.Divide(bytes, max), order);
-                max /= scale;
+                size /= scale;
+                orderIndex++;
             }
-            return "0 B";
+            
+            return string.Format("{0:##.##} {1}", size, orders[orderIndex]).TrimStart();
         }
 
         // Helper Methods
