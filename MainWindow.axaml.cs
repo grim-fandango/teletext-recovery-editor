@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using TeletextSharedResources;
 
@@ -344,8 +345,39 @@ namespace Teletext
                 UpdateStatus("No page to export");
                 return;
             }
-            UpdateStatus("Export Current Page - Feature to be implemented");
-            await Task.Delay(1);
+
+            try
+            {
+                var topLevel = GetTopLevel(this);
+                
+                // Generate default filename with service name and page info
+                var pageNumber = GetPageNumber(currentPage);
+                var subPageNumber = GetSubPageNumber(currentPage);
+                var magazine = (currentPage.Lines != null && currentPage.Lines.Length > 0) ? currentPage.Lines[0].Magazine : 0;
+                var servicePrefix = !string.IsNullOrEmpty(currentServiceName) ? $"{currentServiceName}_" : "";
+                var defaultFileName = $"{servicePrefix}P{magazine}{pageNumber:00}_{subPageNumber:00}.t42";
+                
+                var file = await topLevel!.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Export Current Page",
+                    SuggestedFileName = defaultFileName,
+                    FileTypeChoices = new[] 
+                    { 
+                        new FilePickerFileType("T42 Teletext Files") { Patterns = new[] { "*.t42" } },
+                        new FilePickerFileType("All Files") { Patterns = new[] { "*.*" } }
+                    }
+                });
+
+                if (file != null)
+                {
+                    await ExportPageToT42(currentPage, file.Path.LocalPath);
+                    UpdateStatus($"Page exported: {Path.GetFileName(file.Path.LocalPath)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error exporting current page: {ex.Message}");
+            }
         }
 
         private async void ExportPNG_Click(object sender, RoutedEventArgs e)
@@ -355,8 +387,39 @@ namespace Teletext
                 UpdateStatus("No page to export as PNG");
                 return;
             }
-            UpdateStatus("Export as PNG - Feature to be implemented");
-            await Task.Delay(1);
+
+            try
+            {
+                var topLevel = GetTopLevel(this);
+                
+                // Generate default filename with service name and page info
+                var pageNumber = GetPageNumber(currentPage);
+                var subPageNumber = GetSubPageNumber(currentPage);
+                var magazine = (currentPage.Lines != null && currentPage.Lines.Length > 0) ? currentPage.Lines[0].Magazine : 0;
+                var servicePrefix = !string.IsNullOrEmpty(currentServiceName) ? $"{currentServiceName}_" : "";
+                var defaultFileName = $"{servicePrefix}P{magazine}{pageNumber:00}_{subPageNumber:00}.png";
+                
+                var file = await topLevel!.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Export Page as PNG",
+                    SuggestedFileName = defaultFileName,
+                    FileTypeChoices = new[] 
+                    { 
+                        new FilePickerFileType("PNG Image") { Patterns = new[] { "*.png" } },
+                        FilePickerFileTypes.All
+                    }
+                });
+
+                if (file != null)
+                {
+                    await ExportPageToPNG(currentPage, file.Path.LocalPath);
+                    UpdateStatus($"Page exported as PNG: {Path.GetFileName(file.Path.LocalPath)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error exporting page as PNG: {ex.Message}");
+            }
         }
 
         // Preferences Menu Handlers
@@ -1644,6 +1707,81 @@ namespace Teletext
             else
             {
                 this.Title = $"{baseTitle}{servicePart}";
+            }
+        }
+
+        private async Task ExportPageToT42(Page page, string filePath)
+        {
+            try
+            {
+                using (var writer = new BinaryWriter(File.Open(filePath, FileMode.Create)))
+                {
+                    // Write page data in T42 format
+                    if (page.Lines != null)
+                    {
+                        foreach (var line in page.Lines)
+                        {
+                            // Write the teletext line bytes directly
+                            if (line.Bytes != null && line.Bytes.Length > 0)
+                            {
+                                writer.Write(line.Bytes);
+                            }
+                            else
+                            {
+                                // If no bytes available, create a minimal line structure
+                                var bytes = new byte[42]; // Standard teletext packet size
+                                bytes[0] = (byte)line.Magazine;
+                                bytes[1] = (byte)line.Row;
+                                
+                                // Fill with the text content if available
+                                if (!string.IsNullOrEmpty(line.Text))
+                                {
+                                    var textBytes = Encoding.ASCII.GetBytes(line.Text);
+                                    Array.Copy(textBytes, 0, bytes, 2, Math.Min(textBytes.Length, 40));
+                                }
+                                
+                                writer.Write(bytes);
+                            }
+                        }
+                    }
+                }
+                
+                await Task.Delay(1); // Allow UI to update
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error in ExportPageToT42: {ex.Message}");
+                throw;
+            }
+        }
+
+        private async Task ExportPageToPNG(Page page, string filePath)
+        {
+            try
+            {
+                if (renderer != null && page.Lines != null)
+                {
+                    var layers = renderer.Render(page, false, false);
+                    if (layers.Foreground != null)
+                    {
+                        // Save as PNG
+                        layers.Foreground.Save(filePath, System.Drawing.Imaging.ImageFormat.Png);
+                        await Task.Delay(1); // Allow UI to update
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Failed to render page - no foreground layer generated");
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException("Cannot export page - renderer not initialized or page has no lines");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error in ExportPageToPNG: {ex.Message}");
+                throw;
             }
         }
     }
