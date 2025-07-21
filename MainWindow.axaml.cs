@@ -35,6 +35,10 @@ namespace Teletext
             {
                 renderer = new TeletextRenderer(showBorders);
                 renderer.Font = currentFontName;
+                
+                // Set DPI for proper scaling
+                var scaling = this.RenderScaling;
+                renderer.DeviceDPI = (float)(96.0 * scaling);
             }
             catch (Exception ex)
             {
@@ -187,6 +191,7 @@ namespace Teletext
         private void ShowBorders_Click(object sender, RoutedEventArgs e)
         {
             showBorders = !showBorders;
+            ShowBordersMenuItem.Header = showBorders ? "Show _Borders ✓" : "Show _Borders";
             UpdateStatus($"Borders: {(showBorders ? "Enabled" : "Disabled")}");
             
             // Recreate renderer with new border setting, preserving current font
@@ -195,6 +200,11 @@ namespace Teletext
             {
                 renderer = new TeletextRenderer(showBorders);
                 renderer.Font = currentFont;
+                
+                // Set DPI for proper scaling
+                var scaling = this.RenderScaling;
+                renderer.DeviceDPI = (float)(96.0 * scaling);
+                
                 RefreshDisplay();
             }
             catch (Exception ex)
@@ -484,6 +494,11 @@ namespace Teletext
             if (renderer != null)
             {
                 renderer.Font = fontName;
+                
+                // Preserve DPI settings when changing font
+                var scaling = this.RenderScaling;
+                renderer.DeviceDPI = (float)(96.0 * scaling);
+                
                 RefreshDisplay();
                 UpdateStatus($"Font set to: {fontName}");
             }
@@ -644,11 +659,21 @@ namespace Teletext
                             layers.Foreground.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
                             ms.Seek(0, SeekOrigin.Begin);
                             var avaloniaBitmap = new Avalonia.Media.Imaging.Bitmap(ms);
+                            
+                            // Calculate DPI-aware dimensions
+                            var scaling = this.RenderScaling;
+                            var displayWidth = avaloniaBitmap.PixelSize.Width / scaling;
+                            var displayHeight = avaloniaBitmap.PixelSize.Height / scaling;
+                            
+                            // Resize canvas to exactly fit the image with DPI scaling
+                            PageCanvas.Width = displayWidth;
+                            PageCanvas.Height = displayHeight;
+                            
                             var image = new Image 
                             { 
                                 Source = avaloniaBitmap, 
-                                Width = avaloniaBitmap.PixelSize.Width, 
-                                Height = avaloniaBitmap.PixelSize.Height 
+                                Width = displayWidth, 
+                                Height = displayHeight 
                             };
                             PageCanvas.Children.Add(image);
                         }
@@ -683,6 +708,9 @@ namespace Teletext
         private void ClearPageDisplay()
         {
             PageCanvas.Children.Clear();
+            // Reset canvas to default size when no content
+            PageCanvas.Width = 480;
+            PageCanvas.Height = 576;
             MagazineTextBox.Text = "";
             PageNumberTextBox.Text = "";
             SubPageTextBox.Text = "";

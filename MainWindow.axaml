@@ -42,7 +42,7 @@
                     <MenuItem Header="_ETS" Click="FontETS_Click" />
                     <MenuItem Header="_TiFax" Click="FontTiFax_Click" />
                 </MenuItem>
-                <MenuItem Header="Show _Borders" Click="ShowBorders_Click" />
+                <MenuItem Name="ShowBordersMenuItem" Header="Show _Borders ✓" Click="ShowBorders_Click" />
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Click="About_Click" />
@@ -82,9 +82,9 @@
                 
                 <!-- Page Preview Area -->
                 <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Margin="5">
-                    <ScrollViewer Name="PageScrollViewer">
-                        <Canvas Name="PageCanvas" Background="Black" MinWidth="480" MinHeight="576" />
-                    </ScrollViewer>
+                    <Viewbox Name="PageViewbox" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Canvas Name="PageCanvas" Background="Black" />
+                    </Viewbox>
                 </Border>
                 
                 <!-- Page Controls -->
