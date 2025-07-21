@@ -29,6 +29,7 @@ namespace Teletext
         private const int ThumbnailHeight = 240;
         private string currentCarouselFileName = "";
         private bool carouselHasChanges = false;
+        private string currentServiceName = "";
 
         public MainWindow()
         {
@@ -74,6 +75,36 @@ namespace Teletext
             StatusText.Text = $"{DateTime.Now:HH:mm:ss} - {message}";
         }
 
+        private string GetServiceName(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return "";
+
+            try
+            {
+                // Check if it's a file
+                if (File.Exists(path))
+                {
+                    // For single file, use filename without extension
+                    return Path.GetFileNameWithoutExtension(path);
+                }
+                else if (Directory.Exists(path))
+                {
+                    // For folder (the source folder), use parent folder name
+                    // path (SourceFolder) -> parent (SomeParent) <- this is what we want
+                    var dirInfo = new DirectoryInfo(path);
+                    var parent = dirInfo.Parent;
+                    return parent != null ? parent.Name : dirInfo.Name;
+                }
+            }
+            catch (Exception)
+            {
+                // If there's an error, return empty string
+            }
+
+            return "";
+        }
+
         // File Menu Handlers
         private async void OpenFile_Click(object sender, RoutedEventArgs e)
         {
@@ -88,6 +119,7 @@ namespace Teletext
 
                 if (folders.Count >= 1)
                 {
+                    currentServiceName = GetServiceName(folders[0].Path.LocalPath);
                     await LoadTeletextFolder(folders[0].Path.LocalPath);
                     UpdateStatus($"Folder opened: {Path.GetFileName(folders[0].Path.LocalPath)}");
                 }
@@ -117,6 +149,7 @@ namespace Teletext
 
                 if (files.Count >= 1)
                 {
+                    currentServiceName = GetServiceName(files[0].Path.LocalPath);
                     await LoadT42Service(files[0].Path.LocalPath);
                     UpdateStatus($"T42 Service opened: {Path.GetFileName(files[0].Path.LocalPath)}");
                 }
@@ -182,6 +215,7 @@ namespace Teletext
 
                 if (files.Count >= 1)
                 {
+                    currentServiceName = GetServiceName(files[0].Path.LocalPath);
                     await LoadCarousel(files[0].Path.LocalPath);
                     UpdateStatus($"Carousel opened: {Path.GetFileName(files[0].Path.LocalPath)}");
                 }
@@ -292,6 +326,7 @@ namespace Teletext
             // Reset carousel state
             currentCarouselFileName = "";
             carouselHasChanges = false;
+            currentServiceName = "";
             
             // Clear service state
             service = new Service();
@@ -1101,6 +1136,7 @@ namespace Teletext
                             // Dropped a folder
                             if (IsValidTeletextFolder(filePath))
                             {
+                                currentServiceName = GetServiceName(filePath);
                                 await LoadTeletextFolder(filePath);
                                 UpdateStatus($"Folder dropped and loaded: {Path.GetFileName(filePath)}");
                             }
@@ -1115,11 +1151,13 @@ namespace Teletext
                             
                             if (extension == ".t42")
                             {
+                                currentServiceName = GetServiceName(filePath);
                                 await LoadT42Service(filePath);
                                 UpdateStatus($"T42 file dropped and loaded: {Path.GetFileName(filePath)}");
                             }
                             else
                             {
+                                currentServiceName = GetServiceName(filePath);
                                 await LoadSingleFileFromFolder(filePath);
                                 UpdateStatus($"Teletext file dropped and loaded: {Path.GetFileName(filePath)}");
                             }
@@ -1546,8 +1584,9 @@ namespace Teletext
                                 var subPageNumber = GetSubPageNumber(page);
                                 var magazine = (page.Lines != null && page.Lines.Length > 0) ? page.Lines[0].Magazine : 0;
                                 
-                                // Include thumbnail index to ensure unique filenames
-                                var fileName = $"P{magazine}{pageNumber:00}_{subPageNumber:00}_{thumbnailIndex:000}.png";
+                                // Include service name and thumbnail index to ensure unique filenames
+                                var servicePrefix = !string.IsNullOrEmpty(currentServiceName) ? $"{currentServiceName}_" : "";
+                                var fileName = $"{servicePrefix}P{magazine}{pageNumber:00}_{subPageNumber:00}_{thumbnailIndex:000}.png";
                                 var fullPath = Path.Combine(exportFolder, fileName);
 
                                 // Save as PNG
@@ -1588,20 +1627,23 @@ namespace Teletext
 
         private void UpdateWindowTitle()
         {
+            var baseTitle = "Teletext Recovery Editor";
+            var servicePart = !string.IsNullOrEmpty(currentServiceName) ? $" [{currentServiceName}]" : "";
+            
             if (!string.IsNullOrEmpty(currentCarouselFileName))
             {
                 var fileName = Path.GetFileName(currentCarouselFileName);
                 var changedMarker = carouselHasChanges ? " *" : "";
-                this.Title = $"Teletext Recovery Editor : {fileName}{changedMarker}";
+                this.Title = $"{baseTitle}{servicePart} : {fileName}{changedMarker}";
             }
             else if (recoveredPages.Count > 0)
             {
                 var changedMarker = carouselHasChanges ? " *" : "";
-                this.Title = $"Teletext Recovery Editor : Untitled{changedMarker}";
+                this.Title = $"{baseTitle}{servicePart} : Untitled{changedMarker}";
             }
             else
             {
-                this.Title = "Teletext Recovery Editor";
+                this.Title = $"{baseTitle}{servicePart}";
             }
         }
     }
