@@ -33,9 +33,8 @@ namespace Teletext
         {
             try
             {
-                renderer = new TeletextRenderer();
-                // Note: SetFont method may need to be implemented or may have different signature
-                // renderer.SetFont(currentFontName);
+                renderer = new TeletextRenderer(showBorders);
+                renderer.Font = currentFontName;
             }
             catch (Exception ex)
             {
@@ -189,7 +188,19 @@ namespace Teletext
         {
             showBorders = !showBorders;
             UpdateStatus($"Borders: {(showBorders ? "Enabled" : "Disabled")}");
-            RefreshDisplay();
+            
+            // Recreate renderer with new border setting, preserving current font
+            string currentFont = renderer?.Font ?? currentFontName;
+            try
+            {
+                renderer = new TeletextRenderer(showBorders);
+                renderer.Font = currentFont;
+                RefreshDisplay();
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error updating renderer borders: {ex.Message}");
+            }
         }
 
         private void About_Click(object sender, RoutedEventArgs e)
@@ -472,8 +483,7 @@ namespace Teletext
             currentFontName = fontName;
             if (renderer != null)
             {
-                // Note: SetFont method implementation needed
-                // renderer.SetFont(fontName);
+                renderer.Font = fontName;
                 RefreshDisplay();
                 UpdateStatus($"Font set to: {fontName}");
             }
@@ -634,7 +644,12 @@ namespace Teletext
                             layers.Foreground.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
                             ms.Seek(0, SeekOrigin.Begin);
                             var avaloniaBitmap = new Avalonia.Media.Imaging.Bitmap(ms);
-                            var image = new Image { Source = avaloniaBitmap, Width = avaloniaBitmap.PixelSize.Width, Height = avaloniaBitmap.PixelSize.Height };
+                            var image = new Image 
+                            { 
+                                Source = avaloniaBitmap, 
+                                Width = avaloniaBitmap.PixelSize.Width, 
+                                Height = avaloniaBitmap.PixelSize.Height 
+                            };
                             PageCanvas.Children.Add(image);
                         }
                     }
