@@ -17,8 +17,8 @@
         <!-- Menu Bar -->
         <Menu Grid.Row="0">
             <MenuItem Header="_File">
-                <MenuItem Header="_Open" Click="OpenFile_Click" />
-                <MenuItem Header="Open _T42 Service" Click="OpenT42Service_Click" />
+                <MenuItem Header="_Open Folder" Click="OpenFile_Click" />
+                <MenuItem Header="Open Single File _T42" Click="OpenT42Service_Click" />
                 <Separator />
                 <MenuItem Header="_Save T42 Service" Click="SaveT42Service_Click" />
                 <Separator />

@@ -63,8 +63,7 @@
               "RelativeToolTip": "MainWindow.axaml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-07-20T20:00:29.538Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-20T20:00:29.538Z"
             },
             {
               "$type": "Document",
@@ -102,21 +101,19 @@
               "RelativeToolTip": "App.axaml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-07-20T19:59:56.373Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-20T19:59:56.373Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "TeletextRecoveryEditor",
+              "Title": "TeletextRecoveryEditor.csproj",
               "DocumentMoniker": "D:\\Documents\\git\\teletext-suite-core\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
               "RelativeDocumentMoniker": "TeletextRecoveryEditor.csproj",
               "ToolTip": "D:\\Documents\\git\\teletext-suite-core\\teletext-recovery-editor\\TeletextRecoveryEditor.csproj",
               "RelativeToolTip": "TeletextRecoveryEditor.csproj",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-07-20T19:59:20.617Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-20T19:59:20.617Z"
             }
           ]
         }

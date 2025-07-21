@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,8 @@ namespace Teletext
 {
     public partial class MainWindow : Window
     {
-        private Service service = new Service();
+
+        Service service = new Service();
         private TeletextRenderer renderer;
         private Page? currentPage;
         private string currentFontName = "Mullard";
@@ -52,53 +54,21 @@ namespace Teletext
             try
             {
                 var topLevel = GetTopLevel(this);
-                var choice = await ShowFileOrFolderChoice("Open Teletext Data", "Single File", "Folder of Files");
-
-                if (choice == "file")
+                var folders = await topLevel!.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
                 {
-                    var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                    {
-                        Title = "Open Teletext File",
-                        AllowMultiple = false,
-                        FileTypeFilter = new[] 
-                        { 
-                            new FilePickerFileType("Teletext Files") { Patterns = new[] { "*.t42", "*.bin", "*.vbi", "*.pes" } },
-                            FilePickerFileTypes.All
-                        }
-                    });
+                    Title = "Open Teletext Folder",
+                    AllowMultiple = false
+                });
 
-                    if (files.Count >= 1)
-                    {
-                        var filePath = files[0].Path.LocalPath;
-                        if (filePath.EndsWith(".t42", StringComparison.OrdinalIgnoreCase))
-                        {
-                            await LoadT42Service(filePath);
-                        }
-                        else
-                        {
-                            await LoadFile(filePath);
-                        }
-                        UpdateStatus($"File opened: {Path.GetFileName(filePath)}");
-                    }
-                }
-                else if (choice == "folder")
+                if (folders.Count >= 1)
                 {
-                    var folders = await topLevel!.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-                    {
-                        Title = "Open Teletext Folder",
-                        AllowMultiple = false
-                    });
-
-                    if (folders.Count >= 1)
-                    {
-                        await LoadTeletextFolder(folders[0].Path.LocalPath);
-                        UpdateStatus($"Folder opened: {Path.GetFileName(folders[0].Path.LocalPath)}");
-                    }
+                    await LoadTeletextFolder(folders[0].Path.LocalPath);
+                    UpdateStatus($"Folder opened: {Path.GetFileName(folders[0].Path.LocalPath)}");
                 }
             }
             catch (Exception ex)
             {
-                UpdateStatus($"Error opening file: {ex.Message}");
+                UpdateStatus($"Error opening folder: {ex.Message}");
             }
         }
 
@@ -108,43 +78,21 @@ namespace Teletext
             {
                 var topLevel = GetTopLevel(this);
                 
-                // Show a dialog to let user choose between file or folder
-                var choice = await ShowFileOrFolderChoice("Open T42 Service", "T42 Service File", "Service Folder");
-                
-                if (choice == "file")
+                var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
-                    // Open file dialog
-                    var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-                    {
-                        Title = "Open T42 Service File",
-                        AllowMultiple = false,
-                        FileTypeFilter = new[] 
-                        { 
-                            new FilePickerFileType("T42 Service Files") { Patterns = new[] { "*.t42" } },
-                            FilePickerFileTypes.All
-                        }
-                    });
-
-                    if (files.Count >= 1)
-                    {
-                        await LoadT42Service(files[0].Path.LocalPath);
-                        UpdateStatus($"T42 Service opened: {Path.GetFileName(files[0].Path.LocalPath)}");
+                    Title = "Open T42 Service File",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[] 
+                    { 
+                        new FilePickerFileType("T42 Service Files") { Patterns = new[] { "*.t42" } },
+                        FilePickerFileTypes.All
                     }
-                }
-                else if (choice == "folder")
+                });
+
+                if (files.Count >= 1)
                 {
-                    // Open folder dialog
-                    var folders = await topLevel!.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
-                    {
-                        Title = "Open T42 Service Folder",
-                        AllowMultiple = false
-                    });
-
-                    if (folders.Count >= 1)
-                    {
-                        await LoadT42ServiceFolder(folders[0].Path.LocalPath);
-                        UpdateStatus($"T42 Service folder opened: {Path.GetFileName(folders[0].Path.LocalPath)}");
-                    }
+                    await LoadT42Service(files[0].Path.LocalPath);
+                    UpdateStatus($"T42 Service opened: {Path.GetFileName(files[0].Path.LocalPath)}");
                 }
             }
             catch (Exception ex)
@@ -336,13 +284,16 @@ namespace Teletext
                 {
                     UpdateStatus($"Loading file: {Path.GetFileName(filePath)}...");
                     
+                    // Re-instantiate the service to ensure a clean state for the new file.
+                    service = new Service();
+
                     if (filePath.EndsWith(".t42", StringComparison.OrdinalIgnoreCase))
                     {
                         await LoadT42Service(filePath);
                     }
                     else
                     {
-                        await LoadFile(filePath);
+                        await LoadSingleFileFromFolder(filePath);
                     }
                 }
             }
@@ -361,76 +312,6 @@ namespace Teletext
             UpdateStatus("Display cleared");
         }
 
-        private async Task<string> ShowFileOrFolderChoice(string title, string fileButtonText, string folderButtonText)
-        {
-            var choiceWindow = new Window
-            {
-                Title = title,
-                Width = 350,
-                Height = 180,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                CanResize = false
-            };
-
-            var stackPanel = new StackPanel
-            {
-                Margin = new Avalonia.Thickness(20),
-                Spacing = 15
-            };
-
-            stackPanel.Children.Add(new TextBlock
-            {
-                Text = "Choose what to open:",
-                FontSize = 14,
-                FontWeight = FontWeight.Bold,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-            });
-
-            var buttonPanel = new StackPanel
-            {
-                Orientation = Avalonia.Layout.Orientation.Horizontal,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                Spacing = 20
-            };
-
-            string result = null;
-
-            var fileButton = new Button
-            {
-                Content = fileButtonText,
-                Width = 120,
-                Height = 35
-            };
-            fileButton.Click += (s, e) => { result = "file"; choiceWindow.Close(); };
-
-            var folderButton = new Button
-            {
-                Content = folderButtonText, 
-                Width = 120,
-                Height = 35
-            };
-            folderButton.Click += (s, e) => { result = "folder"; choiceWindow.Close(); };
-
-            var cancelButton = new Button
-            {
-                Content = "Cancel",
-                Width = 120,
-                Height = 35,
-                Margin = new Avalonia.Thickness(0, 10, 0, 0)
-            };
-            cancelButton.Click += (s, e) => { result = "cancel"; choiceWindow.Close(); };
-
-            buttonPanel.Children.Add(fileButton);
-            buttonPanel.Children.Add(folderButton);
-            stackPanel.Children.Add(buttonPanel);
-            stackPanel.Children.Add(cancelButton);
-
-            choiceWindow.Content = stackPanel;
-            await choiceWindow.ShowDialog(this);
-
-            return result ?? "cancel";
-        }
-
         private async Task LoadT42Service(string filePath)
         {
             try
@@ -440,10 +321,13 @@ namespace Teletext
                 if (status == "")
                 {
                     service.CheckHorizon = 0x200000;
-                    
-                    recoveredPages.Clear();
-                    RecoveredPagesList.Items.Clear();
-                    
+
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        recoveredPages.Clear();
+                        RecoveredPagesList.Items.Clear();
+                    });
+
                     var carousels = service.ListCarousels();
                     UpdateStatus($"Found {carousels.Count} carousels in T42 service");
                     
@@ -603,8 +487,11 @@ namespace Teletext
                 if (status == "")
                 {
                     service.CheckHorizon = 0x200000;
-                    recoveredPages.Clear();
-                    RecoveredPagesList.Items.Clear();
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        recoveredPages.Clear();
+                        RecoveredPagesList.Items.Clear();
+                    });
 
                     // Loop to get all pages
                     int pageCount = 0;
@@ -616,6 +503,11 @@ namespace Teletext
                         var page = service.GetPage();
                         if (page != null && page.Lines != null && page.Lines.Length > 0)
                         {
+                            // This is the fix from before, which is still needed.
+                            if (page.Lines.Length > 0 && page.Lines[0].Text != null)
+                            {
+                                page.Lines[0].Text = "   P" + page.Lines[0].Magazine + page.Lines[0].Page + " " + page.Lines[0].Text;
+                            }
                             recoveredPages.Add(page);
                             pageCount++;
                         }
@@ -624,9 +516,51 @@ namespace Teletext
                             break;
                     }
 
-                    RefreshRecoveredPagesList();
+                    await Dispatcher.UIThread.InvokeAsync(() => RefreshRecoveredPagesList());
                     this.Title = "Teletext Recovery Editor : " + Path.GetFileName(filePath);
                     UpdateStatus($"File loaded with {recoveredPages.Count} pages.");
+                }
+                else
+                {
+                    UpdateStatus($"Error loading file: {status}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error loading file: {ex.Message}");
+            }
+            await Task.Delay(1);
+        }
+
+        private async Task LoadSingleFileFromFolder(string filePath)
+        {
+            try
+            {
+                string status = service.OpenService(filePath);
+                if (status == "")
+                {
+                    service.CheckHorizon = 0x200000;
+
+                    // Get just the first page from the file
+                    service.Position = 0;
+                    var page = service.GetPage();
+                    if (page != null && page.Lines != null && page.Lines.Length > 0)
+                    {
+                        // Format header text for renderer compatibility
+                        if (page.Lines.Length > 0 && page.Lines[0].Text != null)
+                        {
+                            page.Lines[0].Text = "   P" + page.Lines[0].Magazine + page.Lines[0].Page + " " + page.Lines[0].Text;
+                        }
+                        
+                        currentPage = page;
+                        DisplayPage(page);
+                        UpdatePageInfo(page);
+                        UpdateStatus($"Loaded page from {Path.GetFileName(filePath)}");
+                    }
+                    else
+                    {
+                        UpdateStatus($"No valid pages found in {Path.GetFileName(filePath)}");
+                    }
                 }
                 else
                 {
