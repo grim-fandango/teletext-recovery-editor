@@ -27,6 +27,8 @@ namespace Teletext
         private ThemeVariant currentTheme = ThemeVariant.Default;
         private const int ThumbnailWidth = 320;
         private const int ThumbnailHeight = 240;
+        private string currentCarouselFileName = "";
+        private bool carouselHasChanges = false;
 
         public MainWindow()
         {
@@ -163,34 +165,138 @@ namespace Teletext
         // Carousel Menu Handlers
         private async void OpenCarousel_Click(object sender, RoutedEventArgs e)
         {
-            UpdateStatus("Open Carousel - Feature to be implemented");
-            await Task.Delay(1);
+            try
+            {
+                var topLevel = GetTopLevel(this);
+                
+                var files = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                {
+                    Title = "Open Carousel File",
+                    AllowMultiple = false,
+                    FileTypeFilter = new[] 
+                    { 
+                        new FilePickerFileType("Teletext Files") { Patterns = new[] { "*.t42", "*.bin", "*.vbi", "*.pes", "*.t43", "*.43bp", "*.TTX", "*.EP1" } },
+                        FilePickerFileTypes.All
+                    }
+                });
+
+                if (files.Count >= 1)
+                {
+                    await LoadCarousel(files[0].Path.LocalPath);
+                    UpdateStatus($"Carousel opened: {Path.GetFileName(files[0].Path.LocalPath)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error opening carousel: {ex.Message}");
+            }
         }
 
         private async void SaveCarousel_Click(object sender, RoutedEventArgs e)
         {
-            UpdateStatus("Save Carousel - Feature to be implemented");
-            await Task.Delay(1);
+            if (string.IsNullOrEmpty(currentCarouselFileName))
+            {
+                // If no current file, do Save As instead
+                SaveCarouselAs_Click(sender, e);
+                return;
+            }
+
+            try
+            {
+                await SaveCarousel(currentCarouselFileName);
+                carouselHasChanges = false;
+                UpdateStatus($"Carousel saved: {Path.GetFileName(currentCarouselFileName)}");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error saving carousel: {ex.Message}");
+            }
         }
 
         private async void SaveCarouselAs_Click(object sender, RoutedEventArgs e)
         {
-            UpdateStatus("Save Carousel As - Feature to be implemented");
-            await Task.Delay(1);
+            try
+            {
+                var topLevel = GetTopLevel(this);
+                
+                var file = await topLevel!.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Save Carousel As",
+                    SuggestedFileName = "carousel.t42",
+                    FileTypeChoices = new[] 
+                    { 
+                        new FilePickerFileType("T42 Files") { Patterns = new[] { "*.t42" } },
+                        new FilePickerFileType("Binary Files") { Patterns = new[] { "*.bin" } },
+                        FilePickerFileTypes.All
+                    }
+                });
+
+                if (file != null)
+                {
+                    await SaveCarousel(file.Path.LocalPath);
+                    currentCarouselFileName = file.Path.LocalPath;
+                    carouselHasChanges = false;
+                    UpdateStatus($"Carousel saved as: {Path.GetFileName(file.Path.LocalPath)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error saving carousel: {ex.Message}");
+            }
         }
 
         private async void ExportCarousel_Click(object sender, RoutedEventArgs e)
         {
-            UpdateStatus("Export Carousel - Feature to be implemented");
-            await Task.Delay(1);
+            if (recoveredPages.Count == 0)
+            {
+                UpdateStatus("No carousel data to export");
+                return;
+            }
+
+            try
+            {
+                var topLevel = GetTopLevel(this);
+                var folders = await topLevel!.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Select Export Folder",
+                    AllowMultiple = false
+                });
+
+                if (folders.Count >= 1)
+                {
+                    await ExportCarouselToPNG(folders[0].Path.LocalPath);
+                    UpdateStatus($"Carousel exported to: {folders[0].Path.LocalPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error exporting carousel: {ex.Message}");
+            }
         }
 
         private async void ClearCarousel_Click(object sender, RoutedEventArgs e)
         {
+            // Ask for confirmation if there are unsaved changes
+            if (carouselHasChanges && recoveredPages.Count > 0)
+            {
+                // In a full implementation, you'd show a dialog here
+                // For now, we'll proceed but warn the user
+                UpdateStatus("Warning: Clearing carousel with unsaved changes");
+            }
+
             recoveredPages.Clear();
             RecoveredPagesList.Items.Clear();
             ThumbnailPanel.Children.Clear();
             ClearPageDisplay();
+            
+            // Reset carousel state
+            currentCarouselFileName = "";
+            carouselHasChanges = false;
+            
+            // Clear service state
+            service = new Service();
+            
+            UpdateWindowTitle();
             UpdateStatus("Carousel cleared");
             await Task.Delay(1);
         }
@@ -435,7 +541,9 @@ namespace Teletext
                     
                     await LoadAllPagesFromService();
                     
-                    this.Title = $"Teletext Recovery Editor : {Path.GetFileName(filePath)}";
+                    currentCarouselFileName = "";  // This is not a carousel file, it's a direct T42 load
+                    carouselHasChanges = false;
+                    UpdateWindowTitle();
                     UpdateStatus($"T42 Service loaded successfully with {recoveredPages.Count} pages");
                 }
                 else
@@ -533,7 +641,10 @@ namespace Teletext
                     RecoveredPagesList.Items.Add(listBoxItem);
                 }
 
-                this.Title = $"Teletext Recovery Editor : {Path.GetFileName(folderPath)}";
+                // Reset carousel state for folder browsing
+                currentCarouselFileName = "";
+                carouselHasChanges = false;
+                UpdateWindowTitle();
                 UpdateStatus($"Found {files.Length} T42 service files. Select a file to load.");
             }
             catch (Exception ex)
@@ -578,7 +689,10 @@ namespace Teletext
                     RecoveredPagesList.Items.Add(listBoxItem);
                 }
 
-                this.Title = $"Teletext Recovery Editor : {Path.GetFileName(folderPath)}";
+                // Reset carousel state for folder browsing  
+                currentCarouselFileName = "";
+                carouselHasChanges = false;
+                UpdateWindowTitle();
                 UpdateStatus($"Loaded folder with {files.Length} teletext files. Select files to load thumbnails.");
             }
             catch (Exception ex)
@@ -1315,6 +1429,179 @@ namespace Teletext
             catch (Exception ex)
             {
                 UpdateStatus($"Error in RefreshThumbnails: {ex.Message}");
+            }
+        }
+
+        // Carousel Management Methods
+        private async Task LoadCarousel(string filePath)
+        {
+            try
+            {
+                // Clear existing data
+                recoveredPages.Clear();
+                RecoveredPagesList.Items.Clear();
+                ThumbnailPanel.Children.Clear();
+
+                // Set row length based on file extension
+                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                if (extension == ".43bp" || extension == ".t43")
+                    service.RowLength = 43;
+                else if (extension == ".bin" || extension == ".t42")
+                    service.RowLength = 42;
+                else if (extension == ".ttx" || extension == ".ep1")
+                    service.RowLength = 40;
+                else
+                    service.RowLength = 42; // Default
+
+                // Open and load the carousel file
+                string status = service.OpenService(filePath);
+                if (status == "")
+                {
+                    service.CheckHorizon = 0x200000;
+                    await LoadAllPagesFromService();
+                    
+                    currentCarouselFileName = filePath;
+                    carouselHasChanges = false;
+                    
+                    UpdateWindowTitle();
+                    UpdateStatus($"Carousel loaded successfully with {recoveredPages.Count} pages");
+                }
+                else
+                {
+                    UpdateStatus($"Error loading carousel: {status}");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error loading carousel: {ex.Message}");
+            }
+        }
+
+        private async Task SaveCarousel(string filePath)
+        {
+            try
+            {
+                if (recoveredPages.Count == 0)
+                {
+                    UpdateStatus("No carousel data to save");
+                    return;
+                }
+
+                using (var fs = new FileStream(filePath, FileMode.Create))
+                using (var writer = new BinaryWriter(fs))
+                {
+                    // Sort pages by magazine and page number for consistent output
+                    var sortedPages = recoveredPages.OrderBy(p => GetPageSortKey(p)).ToList();
+                    
+                    foreach (var page in sortedPages)
+                    {
+                        if (page.Lines != null && page.Lines.Length > 0)
+                        {
+                            // Write page data to file
+                            foreach (var line in page.Lines)
+                            {
+                                if (line.Bytes != null && line.Bytes.Length > 0)
+                                {
+                                    writer.Write(line.Bytes);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                await Task.Delay(1); // Ensure async
+                UpdateStatus($"Carousel saved with {recoveredPages.Count} pages");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error saving carousel: {ex.Message}");
+                throw;
+            }
+        }
+
+        private async Task ExportCarouselToPNG(string exportFolder)
+        {
+            try
+            {
+                if (recoveredPages.Count == 0)
+                {
+                    UpdateStatus("No carousel data to export");
+                    return;
+                }
+
+                int exportedCount = 0;
+                int thumbnailIndex = 0;
+                var sortedPages = recoveredPages.OrderBy(p => GetPageSortKey(p)).ToList();
+
+                foreach (var page in sortedPages)
+                {
+                    try
+                    {
+                        if (renderer != null && page.Lines != null)
+                        {
+                            var layers = renderer.Render(page, false, false);
+                            if (layers.Foreground != null)
+                            {
+                                var pageNumber = GetPageNumber(page);
+                                var subPageNumber = GetSubPageNumber(page);
+                                var magazine = (page.Lines != null && page.Lines.Length > 0) ? page.Lines[0].Magazine : 0;
+                                
+                                // Include thumbnail index to ensure unique filenames
+                                var fileName = $"P{magazine}{pageNumber:00}_{subPageNumber:00}_{thumbnailIndex:000}.png";
+                                var fullPath = Path.Combine(exportFolder, fileName);
+
+                                // Save as PNG
+                                layers.Foreground.Save(fullPath, System.Drawing.Imaging.ImageFormat.Png);
+                                exportedCount++;
+                                thumbnailIndex++;
+                                
+                                // Update progress every 10 pages
+                                if (exportedCount % 10 == 0)
+                                {
+                                    UpdateStatus($"Exported {exportedCount} pages...");
+                                    await Task.Delay(1); // Allow UI to update
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception pageEx)
+                    {
+                        UpdateStatus($"Error exporting page {GetPageNumber(page)}: {pageEx.Message}");
+                        thumbnailIndex++; // Still increment index even on error to maintain consistency
+                    }
+                }
+
+                UpdateStatus($"Carousel export completed: {exportedCount} pages exported to {exportFolder}");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"Error exporting carousel: {ex.Message}");
+                throw;
+            }
+        }
+
+        private void MarkCarouselChanged()
+        {
+            carouselHasChanges = true;
+            UpdateWindowTitle();
+        }
+
+        private void UpdateWindowTitle()
+        {
+            if (!string.IsNullOrEmpty(currentCarouselFileName))
+            {
+                var fileName = Path.GetFileName(currentCarouselFileName);
+                var changedMarker = carouselHasChanges ? " *" : "";
+                this.Title = $"Teletext Recovery Editor : {fileName}{changedMarker}";
+            }
+            else if (recoveredPages.Count > 0)
+            {
+                var changedMarker = carouselHasChanges ? " *" : "";
+                this.Title = $"Teletext Recovery Editor : Untitled{changedMarker}";
+            }
+            else
+            {
+                this.Title = "Teletext Recovery Editor";
             }
         }
     }
